@@ -17,15 +17,19 @@ pub fn parse_header(tzfilename: []const u8) !Header {
     var buffer: [4096]u8 = undefined;
     _ = try tzfile.readAll(&buffer);
 
-    const tzh_ttisutcnt = buffer[0x14] << 3 | buffer[0x15] << 2 | buffer[0x16] << 1 | buffer[0x17];
-    const tzh_ttisstdcnt = buffer[0x18] << 3 | buffer[0x19] << 2 | buffer[0x1A] << 1 | buffer[0x1B];
-    const tzh_leapcnt = buffer[0x1C] << 3 | buffer[0x1D] << 2 | buffer[0x1E] << 1 | buffer[0x1F];
-    const tzh_timecnt = buffer[0x20] << 3 | buffer[0x21] << 2 | buffer[0x22] << 1 | buffer[0x23];
-    const tzh_typecnt = buffer[0x24] << 3 | buffer[0x25] << 2 | buffer[0x26] << 1 | buffer[0x27];
-    const tzh_charcnt = buffer[0x28] << 3 | buffer[0x29] << 2 | buffer[0x2A] << 1 | buffer[0x2B];
+    const tzh_ttisutcnt = to_u32(buffer[0x14..0x18].*);
+    const tzh_ttisstdcnt = to_u32(buffer[0x18..0x1C].*);
+    const tzh_leapcnt = to_u32(buffer[0x1C..0x20].*);
+    const tzh_timecnt = to_u32(buffer[0x20..0x24].*);
+    const tzh_typecnt = to_u32(buffer[0x24..0x28].*);
+    const tzh_charcnt = to_u32(buffer[0x28..0x2C].*);
     const v2_header_start = tzh_timecnt * 5 + tzh_typecnt * 6 + tzh_leapcnt * 8 + tzh_charcnt + tzh_ttisstdcnt + tzh_ttisutcnt + 44;
 
     return Header{ .tzh_ttisutcnt = tzh_ttisutcnt, .tzh_ttisstdcnt = tzh_ttisstdcnt, .tzh_leapcnt = tzh_leapcnt, .tzh_timecnt = tzh_timecnt, .tzh_typecnt = tzh_typecnt, .tzh_charcnt = tzh_charcnt, .v2_header_start = v2_header_start };
+}
+
+pub fn to_u32(b: [4]u8) u32 {
+    return @as(u32, b[0]) << 24 | @as(u32, b[1]) << 16 | @as(u32, b[2]) << 8 | @as(u32, b[3]);
 }
 
 test "header parse" {
@@ -46,4 +50,9 @@ test "header parse" {
     try testing.expect(result.tzh_typecnt == amph.tzh_typecnt);
     try testing.expect(result.tzh_charcnt == amph.tzh_charcnt);
     try testing.expect(result.v2_header_start == amph.v2_header_start);
+}
+
+test "bytes to u32" {
+    const bytes = [4]u8{ 0xDE, 0xAD, 0xBE, 0xEF };
+    try testing.expect(to_u32(bytes) == 0xDEADBEEF);
 }

@@ -28,7 +28,7 @@ pub fn parse_header(tzfilename: []const u8) !Header {
     return Header{ .tzh_ttisutcnt = tzh_ttisutcnt, .tzh_ttisstdcnt = tzh_ttisstdcnt, .tzh_leapcnt = tzh_leapcnt, .tzh_timecnt = tzh_timecnt, .tzh_typecnt = tzh_typecnt, .tzh_charcnt = tzh_charcnt, .v2_header_start = v2_header_start };
 }
 
-pub fn to_u32(b: [4]u8) u32 {
+fn to_u32(b: [4]u8) u32 {
     return @as(u32, b[0]) << 24 | @as(u32, b[1]) << 16 | @as(u32, b[2]) << 8 | @as(u32, b[3]);
 }
 

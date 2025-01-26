@@ -11,12 +11,7 @@ const Header = struct {
     v2_header_start: u32,
 };
 
-pub fn parse_header(tzfilename: []const u8) !Header {
-    const tzfile = try std.fs.openFileAbsolute(tzfilename, .{});
-    defer tzfile.close();
-    var buffer: [4096]u8 = undefined;
-    _ = try tzfile.readAll(&buffer);
-
+pub fn parse_header(buffer: *[8192]u8) !Header {
     const tzh_ttisutcnt = to_u32(buffer[0x14..0x18].*);
     const tzh_ttisstdcnt = to_u32(buffer[0x18..0x1C].*);
     const tzh_leapcnt = to_u32(buffer[0x1C..0x20].*);
@@ -33,6 +28,11 @@ fn to_u32(b: [4]u8) u32 {
 }
 
 test "header parse" {
+    const tzfile = try std.fs.openFileAbsolute("/usr/share/zoneinfo/America/Phoenix", .{});
+    defer tzfile.close();
+    var buffer: [8192]u8 = undefined;
+    _ = try tzfile.readAll(&buffer);
+
     const amph = Header{
         .tzh_ttisutcnt = 5,
         .tzh_ttisstdcnt = 5,
@@ -42,7 +42,7 @@ test "header parse" {
         .tzh_charcnt = 16,
         .v2_header_start = 155,
     };
-    const result = try parse_header("/usr/share/zoneinfo/America/Phoenix");
+    const result = try parse_header(&buffer);
     try testing.expect(result.tzh_ttisutcnt == amph.tzh_ttisutcnt);
     try testing.expect(result.tzh_ttisstdcnt == amph.tzh_ttisstdcnt);
     try testing.expect(result.tzh_leapcnt == amph.tzh_leapcnt);

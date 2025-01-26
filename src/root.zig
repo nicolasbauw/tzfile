@@ -1,6 +1,13 @@
 const std = @import("std");
 const testing = std.testing;
 
+const MAGIC: u32 = 0x545A6966;
+
+const TimezoneError = error{
+    InvalidMagic,
+    UnsupportedFormat,
+};
+
 const Header = struct {
     tzh_ttisutcnt: u32,
     tzh_ttisstdcnt: u32,
@@ -12,6 +19,10 @@ const Header = struct {
 };
 
 pub fn parse_header(buffer: *[8192]u8) !Header {
+    const magic = to_u32(buffer[0x00..0x04].*);
+    if (magic != MAGIC) return error.InvalidMagic;
+    if (buffer[4] != 50) return error.UnsupportedFormat;
+
     const tzh_ttisutcnt = to_u32(buffer[0x14..0x18].*);
     const tzh_ttisstdcnt = to_u32(buffer[0x18..0x1C].*);
     const tzh_leapcnt = to_u32(buffer[0x1C..0x20].*);
@@ -43,13 +54,7 @@ test "header parse" {
         .v2_header_start = 155,
     };
     const result = try parse_header(&buffer);
-    try testing.expect(result.tzh_ttisutcnt == amph.tzh_ttisutcnt);
-    try testing.expect(result.tzh_ttisstdcnt == amph.tzh_ttisstdcnt);
-    try testing.expect(result.tzh_leapcnt == amph.tzh_leapcnt);
-    try testing.expect(result.tzh_timecnt == amph.tzh_timecnt);
-    try testing.expect(result.tzh_typecnt == amph.tzh_typecnt);
-    try testing.expect(result.tzh_charcnt == amph.tzh_charcnt);
-    try testing.expect(result.v2_header_start == amph.v2_header_start);
+    try testing.expect(std.meta.eql(amph, result));
 }
 
 test "bytes to u32" {

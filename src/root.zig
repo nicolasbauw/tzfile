@@ -1,5 +1,6 @@
 const std = @import("std");
 const testing = std.testing;
+const ArrayList = std.ArrayList;
 
 const MAGIC: u32 = 0x545A6966;
 
@@ -16,6 +17,25 @@ const Header = struct {
     tzh_typecnt: u32,
     tzh_charcnt: u32,
     v2_header_start: u32,
+};
+
+/// This is the library's primary structure, which contains the TZfile fields.
+const Tz = struct {
+    /// transition times timestamps table
+    tzh_timecnt_data: ArrayList(i64),
+    /// indices for the next field
+    tzh_timecnt_indices: ArrayList(u8),
+    /// a struct containing UTC offset, daylight saving time, abbreviation index
+    tzh_typecnt: ArrayList(Ttinfo),
+    /// abbreviations table
+    tz_abbr: ArrayList([]const u8),
+};
+
+/// This sub-structure of the Tz struct is part of the TZfile format specifications, and contains UTC offset, daylight saving time, abbreviation index.
+const Ttinfo = struct {
+    tt_utoff: i32,
+    tt_isdst: u8,
+    tt_abbrind: u8,
 };
 
 pub fn parse_header(buffer: *[8192]u8) !Header {

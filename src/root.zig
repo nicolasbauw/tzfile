@@ -2,7 +2,10 @@ const std = @import("std");
 const testing = std.testing;
 const ArrayList = std.ArrayList;
 
+// TZif magic four bytes
 const MAGIC: u32 = 0x545A6966;
+// Header length
+const HEADER_LEN: usize = 0x2C;
 
 const TimezoneError = error{
     InvalidMagic,
@@ -52,6 +55,25 @@ pub fn parse_header(buffer: *[8192]u8) !Header {
     const v2_header_start = tzh_timecnt * 5 + tzh_typecnt * 6 + tzh_leapcnt * 8 + tzh_charcnt + tzh_ttisstdcnt + tzh_ttisutcnt + 44;
 
     return Header{ .tzh_ttisutcnt = tzh_ttisutcnt, .tzh_ttisstdcnt = tzh_ttisstdcnt, .tzh_leapcnt = tzh_leapcnt, .tzh_timecnt = tzh_timecnt, .tzh_typecnt = tzh_typecnt, .tzh_charcnt = tzh_charcnt, .v2_header_start = v2_header_start };
+}
+
+fn parse_data(buffer: *[8192]u8, header: Header) Tz {
+    // Calculates fields lengths and indexes (Version 2 format)
+    const tzh_timecnt_len: u32 = header.tzh_timecnt * 9;
+    const tzh_typecnt_len: u32 = header.tzh_typecnt * 6;
+    const tzh_leapcnt_len: u32 = header.tzh_leapcnt * 12;
+    const tzh_charcnt_len: u32 = header.tzh_charcnt;
+    const tzh_timecnt_end: u32 = HEADER_LEN + header.v2_header_start + tzh_timecnt_len;
+    const tzh_typecnt_end: u32 = tzh_timecnt_end + tzh_typecnt_len;
+    const tzh_leapcnt_end: u32 = tzh_typecnt_end + tzh_leapcnt_len;
+    const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
+
+    const tzh_timecnt_data: []u8 = buffer[HEADER_LEN + header.v2_header_start .. HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8];
+    const reader = tzh_timecnt_data.reader();
+    var i: usize = 0;
+    while (i < header.timecnt) : (i += 1) {
+        try reader.readInt(i64, .big);
+    }
 }
 
 fn to_u32(b: [4]u8) u32 {

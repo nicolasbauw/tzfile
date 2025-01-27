@@ -1,0 +1,27 @@
+00000000  54 5a 69 66 32 00 00 00  00 00 00 00 00 00 00 00  |TZif2...........|
+00000010  00 00 00 00 00 00 00 05  00 00 00 05 00 00 00 00  |................|
+00000020  00 00 00 0b 00 00 00 05  00 00 00 10 80 00 00 00  |................|
+00000030  9e a6 3a 90 9f bb 07 80  a0 86 1c 90 a1 9a e9 80  |..:.............|
+00000040  cb 89 0c 90 cf 17 df 1c  cf 8f e5 ac d0 81 1a 1c  |................|
+00000050  fa f8 75 10 fb e8 58 00  04 01 02 01 02 03 02 03  |..u...X.........|
+00000060  02 01 02 ff ff 96 ee 00  00 ff ff ab a0 01 04 ff  |................|
+00000070  ff 9d 90 00 08 ff ff ab  a0 01 0c ff ff 9d 90 00  |................|
+00000080  08 4c 4d 54 00 4d 44 54  00 4d 53 54 00 4d 57 54  |.LMT.MDT.MST.MWT|
+00000090  00 00 00 00 00 01 00 00  00 00 01 54 5a 69 66 32  |...........TZif2|
+000000a0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+000000b0  00 00 05 00 00 00 05 00  00 00 00 00 00 00 0b 00  |................|
+000000c0  00 00 05 00 00 00 10 ff  ff ff ff 5e 04 0c b0 ff  |...........^....|
+000000d0  ff ff ff 9e a6 3a 90 ff  ff ff ff 9f bb 07 80 ff  |.....:..........|
+000000e0  ff ff ff a0 86 1c 90 ff  ff ff ff a1 9a e9 80 ff  |................|
+000000f0  ff ff ff cb 89 0c 90 ff  ff ff ff cf 17 df 1c ff  |................|
+00000100  ff ff ff cf 8f e5 ac ff  ff ff ff d0 81 1a 1c ff  |................|
+00000110  ff ff ff fa f8 75 10 ff  ff ff ff fb e8 58 00 04  |.....u.......X..|
+00000120  01 02 01 02 03 02 03 02  01 02 ff ff 96 ee 00 00  |................|
+00000130  ff ff ab a0 01 04 ff ff  9d 90 00 08 ff ff ab a0  |................|
+00000140  01 0c ff ff 9d 90 00 08  4c 4d 54 00 4d 44 54 00  |........LMT.MDT.|
+00000150  4d 53 54 00 4d 57 54 00  00 00 00 00 01 00 00 00  |MST.MWT.........|
+00000160  00 01 0a 4d 53 54 37 0a                           |...MST7.|
+00000168
+Tz { tzh_timecnt_data: [-2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200], tzh_timecnt_indices: [4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2], tzh_typecnt: [Ttinfo { tt_gmtoff: -26898, tt_isdst: 0, tt_abbrind: 0 }, Ttinfo { tt_gmtoff: -21600, tt_isdst: 1, tt_abbrind: 1 }, Ttinfo { tt_gmtoff: -25200, tt_isdst: 0, tt_abbrind: 2 }, Ttinfo { tt_gmtoff: -21600, tt_isdst: 1, tt_abbrind: 3 }, Ttinfo { tt_gmtoff: -25200, tt_isdst: 0, tt_abbrind: 2 }], tz_abbr: ["LMT", "MDT", "MST", "MWT"], name: "America/Phoenix" }
+
+Tzinfo { timezone: "America/Phoenix", utc_datetime: 2025-01-27T09:23:07.757061Z, datetime: 2025-01-27T02:23:07.757061-07:00, dst_from: None, dst_until: None, dst_period: false, raw_offset: -25200, dst_offset: 0, utc_offset: -07:00, abbreviation: "MST", week_number: 5 }

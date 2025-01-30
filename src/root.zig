@@ -4,7 +4,7 @@ const testing = std.testing;
 // TZif magic four bytes
 const MAGIC: u32 = 0x545A6966;
 // Header length
-const HEADER_LEN: usize = 0x2C;
+const HEADER_LEN: u32 = 0x2C;
 
 const TimezoneError = error{
     InvalidMagic,
@@ -29,7 +29,7 @@ const Tz = struct {
     /// transition times timestamps table
     tzh_timecnt_data: []const i64,
     // indices for the next field
-    //tzh_timecnt_indices: []const u8,
+    tzh_timecnt_indices: []const u8,
     // a struct containing UTC offset, daylight saving time, abbreviation index
     //tzh_typecnt: []const Ttinfo,
     // abbreviations table
@@ -37,6 +37,7 @@ const Tz = struct {
 
     pub fn deinit(self: *const Tz) void {
         self.allocator.free(self.tzh_timecnt_data);
+        self.allocator.free(self.tzh_timecnt_indices);
     }
 };
 
@@ -69,7 +70,7 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     //const tzh_typecnt_len: u32 = header.tzh_typecnt * 6;
     //const tzh_leapcnt_len: u32 = header.tzh_leapcnt * 12;
     //const tzh_charcnt_len: u32 = header.tzh_charcnt;
-    //const tzh_timecnt_end: u32 = HEADER_LEN + header.v2_header_start + tzh_timecnt_len;
+    const tzh_timecnt_end: u32 = HEADER_LEN + header.v2_header_start + tzh_timecnt_len;
     //const tzh_typecnt_end: u32 = tzh_timecnt_end + tzh_typecnt_len;
     //const tzh_leapcnt_end: u32 = tzh_typecnt_end + tzh_leapcnt_len;
     //const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
@@ -84,7 +85,14 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
         tzh_timecnt_data[i / 8] = to_i64(cnt[i..(i + 8)][0..8].*);
     }
 
-    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data };
+    // indices for the next field
+    var tzh_timecnt_indices = try allocator.alloc(u8, tzh_timecnt_len - 1);
+    errdefer allocator.free(tzh_timecnt_indices);
+
+    tzh_timecnt_indices = buffer[HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8 .. tzh_timecnt_end];
+
+    // Returning the Tz struct
+    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices };
 }
 
 fn to_u32(b: [4]u8) u32 {
@@ -121,14 +129,15 @@ test "data parse" {
     _ = try tzfile.readAll(&buffer);
 
     const header = try parse_header(&buffer);
-    const amph: []const i64 = &.{ -2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200 };
+    const amph_timecnt_d: []const i64 = &.{ -2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200 };
+    const amph_timecnt_t: []const u8 = &.{ 4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2 };
     const result = try parse_data(std.testing.allocator, &buffer, header);
-    errdefer result.deinit();
 
-    //std.debug.print("amph : {any} {any}\n", .{ @TypeOf(amph), amph });
-    //std.debug.print("rslt : {any},{any}\n", .{ @TypeOf(result.tzh_timecnt_data), result.tzh_timecnt_data });
+    //std.debug.print("amph : {any} {any}\n", .{ @TypeOf(amph_timecnt_t), amph_timecnt_t });
+    //std.debug.print("rslt : {any},{any}\n", .{ @TypeOf(result.tzh_timecnt_indices), result.tzh_timecnt_indices });
 
-    try testing.expectEqualSlices(i64, amph, result.tzh_timecnt_data);
+    try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
+    try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);
     result.deinit();
 }
 

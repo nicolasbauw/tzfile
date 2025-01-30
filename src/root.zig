@@ -74,18 +74,17 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     //const tzh_leapcnt_end: u32 = tzh_typecnt_end + tzh_leapcnt_len;
     //const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
 
-    // Creating transition times slice
-    var tzh_timecnt_data = try allocator.alloc(i64, tzh_timecnt_len);
+    // Transition times
+    var tzh_timecnt_data = try allocator.alloc(i64, (tzh_timecnt_len / 8) - 1);
     errdefer allocator.free(tzh_timecnt_data);
 
     const cnt = buffer[HEADER_LEN + header.v2_header_start .. HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8];
     var i: usize = 0;
     while (i < cnt.len) : (i += 8) {
-        tzh_timecnt_data[i] = to_i64(cnt[i..(i + 8)][0..8].*);
+        tzh_timecnt_data[i / 8] = to_i64(cnt[i..(i + 8)][0..8].*);
     }
 
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data };
-    //return Tz{ .tzh_timecnt_data = &[_]i64{0} };
 }
 
 fn to_u32(b: [4]u8) u32 {
@@ -124,10 +123,12 @@ test "data parse" {
     const header = try parse_header(&buffer);
     const amph: []const i64 = &.{ -2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200 };
     const result = try parse_data(std.testing.allocator, &buffer, header);
+    errdefer result.deinit();
 
-    //std.debug.print("result : {}", .{result});
+    //std.debug.print("amph : {any} {any}\n", .{ @TypeOf(amph), amph });
+    //std.debug.print("rslt : {any},{any}\n", .{ @TypeOf(result.tzh_timecnt_data), result.tzh_timecnt_data });
 
-    try testing.expectEqual(amph[0], result.tzh_timecnt_data[0]);
+    try testing.expectEqualSlices(i64, amph, result.tzh_timecnt_data);
     result.deinit();
 }
 

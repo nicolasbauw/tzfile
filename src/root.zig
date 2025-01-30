@@ -134,7 +134,8 @@ test "data parse" {
     const result = try parse_data(std.testing.allocator, &buffer, header);
 
     //std.debug.print("amph : {any} {any}\n", .{ @TypeOf(amph_timecnt_t), amph_timecnt_t });
-    //std.debug.print("rslt : {any},{any}\n", .{ @TypeOf(result.tzh_timecnt_indices), result.tzh_timecnt_indices });
+    std.debug.print("tzh_timecnt_data    : {any},{any}\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
+    std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);

@@ -93,7 +93,6 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
 
     // Returning the Tz struct
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices };
-    //, .tzh_timecnt_indices = &.{0} };
 }
 
 fn to_u32(b: [4]u8) u32 {

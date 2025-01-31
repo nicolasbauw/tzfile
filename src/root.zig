@@ -33,11 +33,12 @@ const Tz = struct {
     // a struct containing UTC offset, daylight saving time, abbreviation index
     //tzh_typecnt: []const Ttinfo,
     // abbreviations table
-    //tz_abbr: []const u8),
+    tz_abbr: []const u8,
 
     pub fn deinit(self: *const Tz) void {
         self.allocator.free(self.tzh_timecnt_data);
         self.allocator.free(self.tzh_timecnt_indices);
+        self.allocator.free(self.tz_abbr);
     }
 };
 
@@ -67,13 +68,13 @@ fn parse_header(buffer: *[8192]u8) !Header {
 fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !Tz {
     // Calculates fields lengths and indexes (Version 2 format)
     const tzh_timecnt_len: u32 = header.tzh_timecnt * 9;
-    //const tzh_typecnt_len: u32 = header.tzh_typecnt * 6;
-    //const tzh_leapcnt_len: u32 = header.tzh_leapcnt * 12;
-    //const tzh_charcnt_len: u32 = header.tzh_charcnt;
+    const tzh_typecnt_len: u32 = header.tzh_typecnt * 6;
+    const tzh_leapcnt_len: u32 = header.tzh_leapcnt * 12;
+    const tzh_charcnt_len: u32 = header.tzh_charcnt;
     const tzh_timecnt_end: u32 = HEADER_LEN + header.v2_header_start + tzh_timecnt_len;
-    //const tzh_typecnt_end: u32 = tzh_timecnt_end + tzh_typecnt_len;
-    //const tzh_leapcnt_end: u32 = tzh_typecnt_end + tzh_leapcnt_len;
-    //const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
+    const tzh_typecnt_end: u32 = tzh_timecnt_end + tzh_typecnt_len;
+    const tzh_leapcnt_end: u32 = tzh_typecnt_end + tzh_leapcnt_len;
+    const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
 
     // Transition times
     const tzh_timecnt_data = try allocator.alloc(i64, header.tzh_timecnt);
@@ -91,8 +92,15 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
 
     @memcpy(tzh_timecnt_indices[0..header.tzh_timecnt], buffer[HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8 .. tzh_timecnt_end]);
 
+    // Abbreviations
+    const abbrs = buffer[tzh_leapcnt_end..tzh_charcnt_end];
+    const tz_abbr = try allocator.alloc(u8, abbrs.len);
+    errdefer allocator.free(tzh_timecnt_indices);
+
+    @memcpy(tz_abbr[0..abbrs.len], abbrs[0..abbrs.len]);
+
     // Returning the Tz struct
-    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices };
+    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tz_abbr = tz_abbr };
 }
 
 fn to_u32(b: [4]u8) u32 {
@@ -135,16 +143,21 @@ test "data parse America/Phoenix" {
     // Reference values
     const amph_timecnt_d: []const i64 = &.{ -2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200 };
     const amph_timecnt_t: []const u8 = &.{ 4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2 };
+    const amph_tz_abbrs: []const u8 = &.{ 0x4c, 0x4d, 0x54, 0x00, 0x4d, 0x44, 0x54, 0x00, 0x4d, 0x53, 0x54, 0x00, 0x4d, 0x57, 0x54, 0x00 };
 
     std.debug.print("reference values    : {any},{any}\n", .{ amph_timecnt_d.len, amph_timecnt_d });
     const result = try parse_data(std.testing.allocator, &buffer, header);
     std.debug.print("tzh_timecnt_data    : {any},{any}\n\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
 
     std.debug.print("reference values    : {any},{any}\n", .{ amph_timecnt_t.len, amph_timecnt_t });
-    std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
+    std.debug.print("tzh_timecnt_indices : {any},{any}\n\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
+
+    std.debug.print("reference values    : {any},{c}\n", .{ amph_tz_abbrs.len, amph_tz_abbrs });
+    std.debug.print("tz_abbrs            : {any},{c}\n", .{ result.tz_abbr.len, result.tz_abbr });
 
     try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);
+    try testing.expectEqualSlices(u8, amph_tz_abbrs, result.tz_abbr);
     result.deinit();
 }
 

@@ -76,7 +76,7 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     //const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
 
     // Transition times
-    var tzh_timecnt_data = try allocator.alloc(i64, header.tzh_timecnt);
+    const tzh_timecnt_data = try allocator.alloc(i64, header.tzh_timecnt);
     errdefer allocator.free(tzh_timecnt_data);
 
     const cnt = buffer[HEADER_LEN + header.v2_header_start .. HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8];
@@ -86,10 +86,10 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     }
 
     // indices for the next field
-    var tzh_timecnt_indices = try allocator.alloc(u8, tzh_timecnt_len);
+    const tzh_timecnt_indices = try allocator.alloc(u8, header.tzh_timecnt);
     errdefer allocator.free(tzh_timecnt_indices);
 
-    tzh_timecnt_indices = buffer[HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8 .. tzh_timecnt_end];
+    @memcpy(tzh_timecnt_indices[0..header.tzh_timecnt], buffer[HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8 .. tzh_timecnt_end]);
 
     // Returning the Tz struct
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices };
@@ -145,7 +145,7 @@ test "data parse America/Phoenix" {
     std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
-    //try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);
+    try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);
     result.deinit();
 }
 
@@ -171,7 +171,7 @@ test "data parse America/Virgin" {
     std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     try testing.expectEqualSlices(i64, amvi_timecnt_d, result.tzh_timecnt_data);
-    //try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);
+    try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);
     result.deinit();
 }
 

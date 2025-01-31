@@ -131,6 +131,7 @@ test "data parse America/Phoenix" {
     _ = try tzfile.readAll(&buffer);
 
     const header = try parse_header(&buffer);
+    std.debug.print("parsed header values: {any}\n", .{header});
     const amph_timecnt_d: []const i64 = &.{ -2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200 };
     //const amph_timecnt_t: []const u8 = &.{ 4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2 };
 
@@ -154,6 +155,7 @@ test "data parse America/Virgin" {
     _ = try tzfile.readAll(&buffer);
 
     const header = try parse_header(&buffer);
+    std.debug.print("parsed header values: {any}\n", .{header});
     const amvi_timecnt_d: []const i64 = &.{ -2233035335, -873057600, -769395600, -765399600 };
     //const amvi_timecnt_t: []const u8 = &.{ 1, 3, 2, 1 };
 

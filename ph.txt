@@ -21,7 +21,9 @@
 00000140  01 0c ff ff 9d 90 00 08  4c 4d 54 00 4d 44 54 00  |........LMT.MDT.|
 00000150  4d 53 54 00 4d 57 54 00  00 00 00 00 01 00 00 00  |MST.MWT.........|
 00000160  00 01 0a 4d 53 54 37 0a                           |...MST7.|
-00000168
+
+Header{ .tzh_ttisutcnt = 5, .tzh_ttisstdcnt = 5, .tzh_leapcnt = 0, .tzh_timecnt = 11, .tzh_typecnt = 5, .tzh_charcnt = 16, .v2_header_start = 155 }
+
 Tz { tzh_timecnt_data: [-2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200], tzh_timecnt_indices: [4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2], tzh_typecnt: [Ttinfo { tt_gmtoff: -26898, tt_isdst: 0, tt_abbrind: 0 }, Ttinfo { tt_gmtoff: -21600, tt_isdst: 1, tt_abbrind: 1 }, Ttinfo { tt_gmtoff: -25200, tt_isdst: 0, tt_abbrind: 2 }, Ttinfo { tt_gmtoff: -21600, tt_isdst: 1, tt_abbrind: 3 }, Ttinfo { tt_gmtoff: -25200, tt_isdst: 0, tt_abbrind: 2 }], tz_abbr: ["LMT", "MDT", "MST", "MWT"], name: "America/Phoenix" }
 
 Tzinfo { timezone: "America/Phoenix", utc_datetime: 2025-01-27T09:23:07.757061Z, datetime: 2025-01-27T02:23:07.757061-07:00, dst_from: None, dst_until: None, dst_period: false, raw_offset: -25200, dst_offset: 0, utc_offset: -07:00, abbreviation: "MST", week_number: 5 }

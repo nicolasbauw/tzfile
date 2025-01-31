@@ -29,7 +29,7 @@ const Tz = struct {
     /// transition times timestamps table
     tzh_timecnt_data: []const i64,
     // indices for the next field
-    //tzh_timecnt_indices: []const u8,
+    tzh_timecnt_indices: []const u8,
     // a struct containing UTC offset, daylight saving time, abbreviation index
     //tzh_typecnt: []const Ttinfo,
     // abbreviations table
@@ -37,7 +37,7 @@ const Tz = struct {
 
     pub fn deinit(self: *const Tz) void {
         self.allocator.free(self.tzh_timecnt_data);
-        //self.allocator.free(self.tzh_timecnt_indices);
+        self.allocator.free(self.tzh_timecnt_indices);
     }
 };
 
@@ -66,11 +66,11 @@ fn parse_header(buffer: *[8192]u8) !Header {
 
 fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !Tz {
     // Calculates fields lengths and indexes (Version 2 format)
-    //const tzh_timecnt_len: u32 = header.tzh_timecnt * 9;
+    const tzh_timecnt_len: u32 = header.tzh_timecnt * 9;
     //const tzh_typecnt_len: u32 = header.tzh_typecnt * 6;
     //const tzh_leapcnt_len: u32 = header.tzh_leapcnt * 12;
     //const tzh_charcnt_len: u32 = header.tzh_charcnt;
-    //const tzh_timecnt_end: u32 = HEADER_LEN + header.v2_header_start + tzh_timecnt_len;
+    const tzh_timecnt_end: u32 = HEADER_LEN + header.v2_header_start + tzh_timecnt_len;
     //const tzh_typecnt_end: u32 = tzh_timecnt_end + tzh_typecnt_len;
     //const tzh_leapcnt_end: u32 = tzh_typecnt_end + tzh_leapcnt_len;
     //const tzh_charcnt_end: u32 = tzh_leapcnt_end + tzh_charcnt_len;
@@ -86,13 +86,13 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     }
 
     // indices for the next field
-    //var tzh_timecnt_indices = try allocator.alloc(u8, tzh_timecnt_len - 1);
-    //errdefer allocator.free(tzh_timecnt_indices);
+    var tzh_timecnt_indices = try allocator.alloc(u8, tzh_timecnt_len);
+    errdefer allocator.free(tzh_timecnt_indices);
 
-    //tzh_timecnt_indices = buffer[HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8 .. tzh_timecnt_end];
+    tzh_timecnt_indices = buffer[HEADER_LEN + header.v2_header_start + header.tzh_timecnt * 8 .. tzh_timecnt_end];
 
     // Returning the Tz struct
-    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data };
+    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices };
     //, .tzh_timecnt_indices = &.{0} };
 }
 
@@ -131,16 +131,18 @@ test "data parse America/Phoenix" {
     _ = try tzfile.readAll(&buffer);
 
     const header = try parse_header(&buffer);
-    std.debug.print("parsed header values: {any}\n", .{header});
+    std.debug.print("parsed header values: {any}\n\n", .{header});
+
+    // Reference values
     const amph_timecnt_d: []const i64 = &.{ -2717643600, -1633273200, -1615132800, -1601823600, -1583683200, -880210800, -820519140, -812653140, -796845540, -84380400, -68659200 };
-    //const amph_timecnt_t: []const u8 = &.{ 4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2 };
+    const amph_timecnt_t: []const u8 = &.{ 4, 1, 2, 1, 2, 3, 2, 3, 2, 1, 2 };
 
-    std.debug.print("reference data      : {any},{any}\n", .{ amph_timecnt_d.len, amph_timecnt_d });
+    std.debug.print("reference values    : {any},{any}\n", .{ amph_timecnt_d.len, amph_timecnt_d });
     const result = try parse_data(std.testing.allocator, &buffer, header);
+    std.debug.print("tzh_timecnt_data    : {any},{any}\n\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
 
-    //std.debug.print("amph : {any} {any}\n", .{ @TypeOf(amph_timecnt_t), amph_timecnt_t });
-    std.debug.print("tzh_timecnt_data    : {any},{any}\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
-    //std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
+    std.debug.print("reference values    : {any},{any}\n", .{ amph_timecnt_t.len, amph_timecnt_t });
+    std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
     //try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);
@@ -155,16 +157,18 @@ test "data parse America/Virgin" {
     _ = try tzfile.readAll(&buffer);
 
     const header = try parse_header(&buffer);
-    std.debug.print("parsed header values: {any}\n", .{header});
+    std.debug.print("parsed header values: {any}\n\n", .{header});
+
+    // Reference values
     const amvi_timecnt_d: []const i64 = &.{ -2233035335, -873057600, -769395600, -765399600 };
-    //const amvi_timecnt_t: []const u8 = &.{ 1, 3, 2, 1 };
+    const amvi_timecnt_t: []const u8 = &.{ 1, 3, 2, 1 };
 
-    std.debug.print("reference data      : {any},{any}\n", .{ amvi_timecnt_d.len, amvi_timecnt_d });
+    std.debug.print("reference values    : {any},{any}\n", .{ amvi_timecnt_d.len, amvi_timecnt_d });
     const result = try parse_data(std.testing.allocator, &buffer, header);
+    std.debug.print("tzh_timecnt_data    : {any},{any}\n\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
 
-    //std.debug.print("amph : {any} {any}\n", .{ @TypeOf(amph_timecnt_t), amph_timecnt_t });
-    std.debug.print("tzh_timecnt_data    : {any},{any}\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
-    //std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
+    std.debug.print("reference values    : {any},{any}\n", .{ amvi_timecnt_t.len, amvi_timecnt_t });
+    std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     try testing.expectEqualSlices(i64, amvi_timecnt_d, result.tzh_timecnt_data);
     //try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);

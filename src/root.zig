@@ -31,7 +31,7 @@ const Tz = struct {
     // indices for the next field
     tzh_timecnt_indices: []const u8,
     // a struct containing UTC offset, daylight saving time, abbreviation index
-    //tzh_typecnt: []const Ttinfo,
+    //tzh_typecnt: []const *Ttinfo,
     // abbreviations table
     tz_abbr: []const u8,
 
@@ -107,8 +107,14 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tz_abbr = tz_abbr };
 }
 
+//fn slice_to_ttinfo(b: [6]u8) Ttinfo {}
+
 fn to_u32(b: [4]u8) u32 {
     return @as(u32, b[0]) << 24 | @as(u32, b[1]) << 16 | @as(u32, b[2]) << 8 | @as(u32, b[3]);
+}
+
+fn to_i32(b: [4]u8) i32 {
+    return @as(i32, b[0]) << 24 | @as(i32, b[1]) << 16 | @as(i32, b[2]) << 8 | @as(i32, b[3]);
 }
 
 fn to_i64(b: [8]u8) i64 {
@@ -199,6 +205,11 @@ test "data parse America/Virgin" {
 test "bytes to u32" {
     const bytes = [4]u8{ 0xDE, 0xAD, 0xBE, 0xEF };
     try testing.expect(to_u32(bytes) == 0xDEADBEEF);
+}
+
+test "bytes to i32" {
+    const bytes = [4]u8{ 0xff, 0xff, 0xc2, 0x07 };
+    try testing.expect(to_i32(bytes) == -15865);
 }
 
 test "bytes to i64" {

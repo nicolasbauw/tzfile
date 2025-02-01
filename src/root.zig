@@ -94,12 +94,14 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
 
     // Abbreviations
     const abbrs = buffer[tzh_leapcnt_end..tzh_charcnt_end];
-    const tz_abbr = try allocator.alloc(u8, abbrs.len);
+    const tz_abbr = try allocator.alloc(u8, header.tzh_charcnt);
     errdefer allocator.free(tzh_timecnt_indices);
 
     @memcpy(tz_abbr[0..abbrs.len], abbrs[0..abbrs.len]);
 
     // ttinfo
+    //const tcnt = buffer[tzh_timecnt_end..tzh_typecnt_end];
+    //const tzh_typecnt = try allocator.alloc(u8, @TypeOf(Ttinfo).len * header.tzh_typecnt);
 
     // Returning the Tz struct
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tz_abbr = tz_abbr };

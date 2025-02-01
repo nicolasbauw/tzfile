@@ -31,7 +31,7 @@ const Tz = struct {
     // indices for the next field
     tzh_timecnt_indices: []const u8,
     // a struct containing UTC offset, daylight saving time, abbreviation index
-    //tzh_typecnt: []const *Ttinfo,
+    tzh_typecnt: []const Ttinfo,
     // abbreviations table
     tz_abbr: []const u8,
 
@@ -39,6 +39,7 @@ const Tz = struct {
         self.allocator.free(self.tzh_timecnt_data);
         self.allocator.free(self.tzh_timecnt_indices);
         self.allocator.free(self.tz_abbr);
+        self.allocator.free(self.tzh_timecnt_indices);
     }
 };
 
@@ -100,11 +101,16 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     @memcpy(tz_abbr[0..abbrs.len], abbrs[0..abbrs.len]);
 
     // ttinfo
-    //const tcnt = buffer[tzh_timecnt_end..tzh_typecnt_end];
-    //const tzh_typecnt = try allocator.alloc(u8, @TypeOf(Ttinfo).len * header.tzh_typecnt);
+    const tcnt = buffer[tzh_timecnt_end..tzh_typecnt_end];
+    const tzh_typecnt = try allocator.alloc(Ttinfo, header.tzh_typecnt);
+
+    i = 0;
+    while (i < header.tzh_typecnt) : (i += 6) {
+        tzh_typecnt[i / 6] = slice_to_ttinfo(tcnt[i..(i + 6)][0..6].*);
+    }
 
     // Returning the Tz struct
-    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tz_abbr = tz_abbr };
+    return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tzh_typecnt = tzh_typecnt, .tz_abbr = tz_abbr };
 }
 
 fn slice_to_ttinfo(b: [6]u8) Ttinfo {
@@ -166,6 +172,8 @@ test "data parse America/Phoenix" {
 
     std.debug.print("reference values    : {any},{c}\n", .{ amph_tz_abbrs.len, amph_tz_abbrs });
     std.debug.print("tz_abbrs            : {any},{c}\n", .{ result.tz_abbr.len, result.tz_abbr });
+
+    std.debug.print("tzh_typecnt         : {any},{any}\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
 
     try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);

@@ -162,7 +162,7 @@ test "data parse America/Phoenix" {
 }
 
 test "data parse America/Virgin" {
-    std.debug.print("\nTesting timezone America/Virgin\n", .{});
+    std.debug.print("\n\nTesting timezone America/Virgin\n", .{});
     const tzfile = try std.fs.openFileAbsolute("/usr/share/zoneinfo/America/Virgin", .{});
     defer tzfile.close();
     var buffer: [8192]u8 = undefined;
@@ -174,16 +174,21 @@ test "data parse America/Virgin" {
     // Reference values
     const amvi_timecnt_d: []const i64 = &.{ -2233035335, -873057600, -769395600, -765399600 };
     const amvi_timecnt_t: []const u8 = &.{ 1, 3, 2, 1 };
+    const amvi_tz_abbrs: []const u8 = &.{ 0x4c, 0x4d, 0x54, 0x00, 0x41, 0x53, 0x54, 0x00, 0x41, 0x50, 0x54, 0x00, 0x41, 0x57, 0x54, 0x00 };
 
     std.debug.print("reference values    : {any},{any}\n", .{ amvi_timecnt_d.len, amvi_timecnt_d });
     const result = try parse_data(std.testing.allocator, &buffer, header);
     std.debug.print("tzh_timecnt_data    : {any},{any}\n\n", .{ result.tzh_timecnt_data.len, result.tzh_timecnt_data });
 
     std.debug.print("reference values    : {any},{any}\n", .{ amvi_timecnt_t.len, amvi_timecnt_t });
-    std.debug.print("tzh_timecnt_indices : {any},{any}\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
+    std.debug.print("tzh_timecnt_indices : {any},{any}\n\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
+
+    std.debug.print("reference values    : {any},{c}\n", .{ amvi_tz_abbrs.len, amvi_tz_abbrs });
+    std.debug.print("tz_abbrs            : {any},{c}\n", .{ result.tz_abbr.len, result.tz_abbr });
 
     try testing.expectEqualSlices(i64, amvi_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);
+    try testing.expectEqualSlices(u8, amvi_tz_abbrs, result.tz_abbr);
     result.deinit();
 }
 

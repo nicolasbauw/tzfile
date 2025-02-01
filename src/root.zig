@@ -107,7 +107,9 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tz_abbr = tz_abbr };
 }
 
-//fn slice_to_ttinfo(b: [6]u8) Ttinfo {}
+fn slice_to_ttinfo(b: [6]u8) Ttinfo {
+    return Ttinfo{ .tt_utoff = to_i32(b[0..4].*), .tt_isdst = b[4], .tt_desigidx = b[5] };
+}
 
 fn to_u32(b: [4]u8) u32 {
     return @as(u32, b[0]) << 24 | @as(u32, b[1]) << 16 | @as(u32, b[2]) << 8 | @as(u32, b[3]);
@@ -200,6 +202,12 @@ test "data parse America/Virgin" {
     try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);
     try testing.expectEqualSlices(u8, amvi_tz_abbrs, result.tz_abbr);
     result.deinit();
+}
+
+test "slice to ttinfo" {
+    const bytes = [6]u8{ 0xff, 0xff, 0xd5, 0xd0, 0x01, 0x08 };
+    const ttinfo_test = Ttinfo{ .tt_utoff = -10800, .tt_isdst = 1, .tt_desigidx = 8 };
+    try testing.expectEqualDeep(ttinfo_test, slice_to_ttinfo(bytes));
 }
 
 test "bytes to u32" {

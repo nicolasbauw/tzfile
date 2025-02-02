@@ -170,11 +170,13 @@ test "data parse America/Phoenix" {
     std.debug.print("reference values    : {any},{c}\n", .{ amph_tz_abbrs.len, amph_tz_abbrs });
     std.debug.print("tz_abbrs            : {any},{c}\n\n", .{ result.tz_abbr.len, result.tz_abbr });
 
-    std.debug.print("tzh_typecnt         : {any},{any}\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
+    std.debug.print("tzh_typecnt         : {any},{any}\n\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
 
     try testing.expectEqualSlices(i64, amph_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amph_timecnt_t, result.tzh_timecnt_indices);
     try testing.expectEqualSlices(u8, amph_tz_abbrs, result.tz_abbr);
+
+    std.debug.print("Tz struct           : {any}\n", .{result});
     result.deinit();
 }
 
@@ -203,11 +205,13 @@ test "data parse America/Virgin" {
     std.debug.print("reference values    : {any},{c}\n", .{ amvi_tz_abbrs.len, amvi_tz_abbrs });
     std.debug.print("tz_abbrs            : {any},{c}\n\n", .{ result.tz_abbr.len, result.tz_abbr });
 
-    std.debug.print("tzh_typecnt         : {any},{any}\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
+    std.debug.print("tzh_typecnt         : {any},{any}\n\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
 
     try testing.expectEqualSlices(i64, amvi_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);
     try testing.expectEqualSlices(u8, amvi_tz_abbrs, result.tz_abbr);
+
+    std.debug.print("Tz struct           : {any}\n", .{result});
     result.deinit();
 }
 

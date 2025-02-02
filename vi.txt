@@ -21,6 +21,8 @@ Tz { tzh_timecnt_data: [-2233035335, -873057600, -769395600, -765399600], tzh_ti
 
 Tzinfo { timezone: "America/Virgin", utc_datetime: 2025-01-31T08:55:27.308993350Z, datetime: 2025-01-31T04:55:27.308993350-04:00, dst_from: None, dst_until: None, dst_period: false, raw_offset: -14400, dst_offset: 0, utc_offset: -04:00, abbreviation: "AST", week_number: 5 }
 
+Tz struct           : root.Tz{ .allocator = mem.Allocator{ .ptr = anyopaque@1128be8, .vtable = mem.Allocator.VTable{ .alloc = fn (*anyopaque, usize, u8, usize) ?[*]u8@1049c10, .resize = fn (*anyopaque, []u8, u8, usize, usize) bool@1049dd0, .free = fn (*anyopaque, []u8, u8, usize) void@104aad0 } }, .tzh_timecnt_data = { -2233035335, -873057600, -769395600, -765399600 }, .tzh_timecnt_indices = { 1, 3, 2, 1 }, .tzh_typecnt = { root.Ttinfo{ .tt_utoff = -15865, .tt_isdst = 0, .tt_desigidx = 0 }, root.Ttinfo{ .tt_utoff = -14400, .tt_isdst = 0, .tt_desigidx = 4 }, root.Ttinfo{ .tt_utoff = -10800, .tt_isdst = 1, .tt_desigidx = 8 }, root.Ttinfo{ .tt_utoff = -10800, .tt_isdst = 1, .tt_desigidx = 12 } }, .tz_abbr = { 76, 77, 84, 0, 65, 83, 84, 0, 65, 80, 84, 0, 65, 87, 84, 0 } }
+
 ttinfo (nombre = tzh_typecnt)
 ff ff c2 07 00 00
 ff ff c7 c0 00 04

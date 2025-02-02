@@ -106,8 +106,8 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     errdefer allocator.free(tzh_typecnt);
 
     i = 0;
-    while (i < header.tzh_typecnt) : (i += 6) {
-        tzh_typecnt[i / 6] = .{ .tt_utoff = to_i32(tcnt[i + 0 .. i + 4][0..4].*), .tt_isdst = tcnt[i + 4], .tt_desigidx = tcnt[i + 5] };
+    while (i < header.tzh_typecnt) : (i += 1) {
+        tzh_typecnt[i] = .{ .tt_utoff = to_i32(tcnt[i * 6 .. i * 6 + 4][0..4].*), .tt_isdst = tcnt[i * 6 + 4], .tt_desigidx = tcnt[i * 6 + 5] };
     }
 
     // Returning the Tz struct

@@ -39,7 +39,7 @@ const Tz = struct {
         self.allocator.free(self.tzh_timecnt_data);
         self.allocator.free(self.tzh_timecnt_indices);
         self.allocator.free(self.tz_abbr);
-        self.allocator.free(self.tzh_timecnt_indices);
+        self.allocator.free(self.tzh_typecnt);
     }
 };
 
@@ -103,18 +103,15 @@ fn parse_data(allocator: std.mem.Allocator, buffer: *[8192]u8, header: Header) !
     // ttinfo
     const tcnt = buffer[tzh_timecnt_end..tzh_typecnt_end];
     const tzh_typecnt = try allocator.alloc(Ttinfo, header.tzh_typecnt);
+    errdefer allocator.free(tzh_typecnt);
 
     i = 0;
     while (i < header.tzh_typecnt) : (i += 6) {
-        tzh_typecnt[i / 6] = slice_to_ttinfo(tcnt[i..(i + 6)][0..6].*);
+        tzh_typecnt[i / 6] = .{ .tt_utoff = to_i32(tcnt[i + 0 .. i + 4][0..4].*), .tt_isdst = tcnt[i + 4], .tt_desigidx = tcnt[i + 5] };
     }
 
     // Returning the Tz struct
     return Tz{ .allocator = allocator, .tzh_timecnt_data = tzh_timecnt_data, .tzh_timecnt_indices = tzh_timecnt_indices, .tzh_typecnt = tzh_typecnt, .tz_abbr = tz_abbr };
-}
-
-fn slice_to_ttinfo(b: [6]u8) Ttinfo {
-    return Ttinfo{ .tt_utoff = to_i32(b[0..4].*), .tt_isdst = b[4], .tt_desigidx = b[5] };
 }
 
 fn to_u32(b: [4]u8) u32 {
@@ -171,7 +168,7 @@ test "data parse America/Phoenix" {
     std.debug.print("tzh_timecnt_indices : {any},{any}\n\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     std.debug.print("reference values    : {any},{c}\n", .{ amph_tz_abbrs.len, amph_tz_abbrs });
-    std.debug.print("tz_abbrs            : {any},{c}\n", .{ result.tz_abbr.len, result.tz_abbr });
+    std.debug.print("tz_abbrs            : {any},{c}\n\n", .{ result.tz_abbr.len, result.tz_abbr });
 
     std.debug.print("tzh_typecnt         : {any},{any}\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
 
@@ -204,18 +201,14 @@ test "data parse America/Virgin" {
     std.debug.print("tzh_timecnt_indices : {any},{any}\n\n", .{ result.tzh_timecnt_indices.len, result.tzh_timecnt_indices });
 
     std.debug.print("reference values    : {any},{c}\n", .{ amvi_tz_abbrs.len, amvi_tz_abbrs });
-    std.debug.print("tz_abbrs            : {any},{c}\n", .{ result.tz_abbr.len, result.tz_abbr });
+    std.debug.print("tz_abbrs            : {any},{c}\n\n", .{ result.tz_abbr.len, result.tz_abbr });
+
+    std.debug.print("tzh_typecnt         : {any},{any}\n", .{ result.tzh_typecnt.len, result.tzh_typecnt });
 
     try testing.expectEqualSlices(i64, amvi_timecnt_d, result.tzh_timecnt_data);
     try testing.expectEqualSlices(u8, amvi_timecnt_t, result.tzh_timecnt_indices);
     try testing.expectEqualSlices(u8, amvi_tz_abbrs, result.tz_abbr);
     result.deinit();
-}
-
-test "slice to ttinfo" {
-    const bytes = [6]u8{ 0xff, 0xff, 0xd5, 0xd0, 0x01, 0x08 };
-    const ttinfo_test = Ttinfo{ .tt_utoff = -10800, .tt_isdst = 1, .tt_desigidx = 8 };
-    try testing.expectEqualDeep(ttinfo_test, slice_to_ttinfo(bytes));
 }
 
 test "bytes to u32" {

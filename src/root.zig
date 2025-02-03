@@ -35,6 +35,7 @@ const Tz = struct {
     /// abbreviations table of null terminated strings
     tz_abbr: []const u8,
 
+    /// Closes the tzfile and deallocates its resources
     pub fn close(self: *const Tz) void {
         self.allocator.free(self.tzh_timecnt_data);
         self.allocator.free(self.tzh_timecnt_indices);
@@ -53,6 +54,7 @@ const Ttinfo = struct {
     tt_desigidx: u8,
 };
 
+/// Opens the tzfie
 pub fn open(allocator: std.mem.Allocator, file: []const u8) !Tz {
     const tzfile = try std.fs.openFileAbsolute(file, .{});
     defer tzfile.close();

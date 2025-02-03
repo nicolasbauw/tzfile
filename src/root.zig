@@ -28,11 +28,11 @@ const Tz = struct {
     allocator: std.mem.Allocator,
     /// transition times timestamps table
     tzh_timecnt_data: []const i64,
-    // indices for the next field
+    /// indices for the next field
     tzh_timecnt_indices: []const u8,
-    // a struct containing UTC offset, daylight saving time, abbreviation index
+    /// Ttinfo is a struct containing UTC offset, daylight saving time, abbreviation index
     tzh_typecnt: []const Ttinfo,
-    // abbreviations table
+    /// abbreviations table of null terminated strings
     tz_abbr: []const u8,
 
     pub fn deinit(self: *const Tz) void {
@@ -45,9 +45,12 @@ const Tz = struct {
 
 /// This sub-structure of the Tz struct is part of the TZfile format specifications, and contains UTC offset, daylight saving time, abbreviation index.
 const Ttinfo = struct {
-    tt_utoff: i32, // number of seconds to be added to UT
-    tt_isdst: u8, // DST ?
-    tt_desigidx: u8, // index into the array of time zone abbreviation bytes
+    /// number of seconds to be added to UT
+    tt_utoff: i32,
+    /// DST ?
+    tt_isdst: u8,
+    /// index into the array of time zone abbreviation bytes
+    tt_desigidx: u8,
 };
 
 fn parse_header(buffer: *[8192]u8) !Header {

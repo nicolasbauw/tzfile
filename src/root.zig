@@ -1,5 +1,4 @@
 const std = @import("std");
-const testing = std.testing;
 
 // TZif magic four bytes
 const MAGIC: u32 = 0x545A6966;
@@ -158,7 +157,7 @@ test "header parse" {
         .v2_header_start = 155,
     };
     const result = try parse_header(&buffer);
-    try testing.expect(std.meta.eql(amph, result));
+    try std.testing.expect(std.meta.eql(amph, result));
 }
 
 test "data parse America/Phoenix" {
@@ -181,9 +180,9 @@ test "data parse America/Phoenix" {
 
     std.debug.print("tzh_typecnt         : {any},{any}\n\n", .{ tzfile.tzh_typecnt.len, tzfile.tzh_typecnt });
 
-    try testing.expectEqualSlices(i64, amph_timecnt_d, tzfile.tzh_timecnt_data);
-    try testing.expectEqualSlices(u8, amph_timecnt_t, tzfile.tzh_timecnt_indices);
-    try testing.expectEqualSlices(u8, amph_tz_abbrs, tzfile.tz_abbr);
+    try std.testing.expectEqualSlices(i64, amph_timecnt_d, tzfile.tzh_timecnt_data);
+    try std.testing.expectEqualSlices(u8, amph_timecnt_t, tzfile.tzh_timecnt_indices);
+    try std.testing.expectEqualSlices(u8, amph_tz_abbrs, tzfile.tz_abbr);
 
     std.debug.print("Tz struct           : {any}\n", .{tzfile});
     tzfile.close();
@@ -209,9 +208,9 @@ test "data parse America/Virgin" {
 
     std.debug.print("tzh_typecnt         : {any},{any}\n\n", .{ tzfile.tzh_typecnt.len, tzfile.tzh_typecnt });
 
-    try testing.expectEqualSlices(i64, amvi_timecnt_d, tzfile.tzh_timecnt_data);
-    try testing.expectEqualSlices(u8, amvi_timecnt_t, tzfile.tzh_timecnt_indices);
-    try testing.expectEqualSlices(u8, amvi_tz_abbrs, tzfile.tz_abbr);
+    try std.testing.expectEqualSlices(i64, amvi_timecnt_d, tzfile.tzh_timecnt_data);
+    try std.testing.expectEqualSlices(u8, amvi_timecnt_t, tzfile.tzh_timecnt_indices);
+    try std.testing.expectEqualSlices(u8, amvi_tz_abbrs, tzfile.tz_abbr);
 
     std.debug.print("Tz struct           : {any}\n", .{tzfile});
     tzfile.close();
@@ -219,15 +218,15 @@ test "data parse America/Virgin" {
 
 test "bytes to u32" {
     const bytes = [4]u8{ 0xDE, 0xAD, 0xBE, 0xEF };
-    try testing.expect(to_u32(bytes) == 0xDEADBEEF);
+    try std.testing.expect(to_u32(bytes) == 0xDEADBEEF);
 }
 
 test "bytes to i32" {
     const bytes = [4]u8{ 0xff, 0xff, 0xc2, 0x07 };
-    try testing.expect(to_i32(bytes) == -15865);
+    try std.testing.expect(to_i32(bytes) == -15865);
 }
 
 test "bytes to i64" {
     const bytes = [8]u8{ 0xff, 0xff, 0xff, 0xff, 0x5e, 0x04, 0x0c, 0xb0 };
-    try testing.expect(to_i64(bytes) == -2717643600);
+    try std.testing.expect(to_i64(bytes) == -2717643600);
 }

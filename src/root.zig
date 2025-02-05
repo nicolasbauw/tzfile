@@ -34,6 +34,16 @@ pub const Tz = struct {
         v2_header_start: u32,
     };
 
+    /// This sub-structure of the Tz struct is part of the TZfile format specifications, and contains UTC offset, daylight saving time, abbreviation index.
+    const Ttinfo = struct {
+        /// number of seconds to be added to UT
+        tt_utoff: i32,
+        /// DST ?
+        tt_isdst: u8,
+        /// index into the array of time zone abbreviation bytes
+        tt_desigidx: u8,
+    };
+
     /// Opens the tzfie
     pub fn open(allocator: std.mem.Allocator, file: []const u8) !Tz {
         const tzfile = try std.fs.openFileAbsolute(file, .{});
@@ -53,16 +63,6 @@ pub const Tz = struct {
         self.allocator.free(self.tz_abbr);
         self.allocator.free(self.tzh_typecnt);
     }
-
-    /// This sub-structure of the Tz struct is part of the TZfile format specifications, and contains UTC offset, daylight saving time, abbreviation index.
-    const Ttinfo = struct {
-        /// number of seconds to be added to UT
-        tt_utoff: i32,
-        /// DST ?
-        tt_isdst: u8,
-        /// index into the array of time zone abbreviation bytes
-        tt_desigidx: u8,
-    };
 
     fn parse_header(buffer: []u8) !Header {
         const magic = to_u32(buffer[0x00..0x04].*);
